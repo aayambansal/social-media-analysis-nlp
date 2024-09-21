@@ -1,0 +1,48 @@
+import tweepy
+import pandas as pd
+
+# Twitter API credentials
+API_KEY = "your_api_key"
+API_SECRET = "your_api_secret"
+ACCESS_TOKEN = "your_access_token"
+ACCESS_SECRET = "your_access_secret"
+
+# Authenticate with Twitter
+auth = tweepy.OAuthHandler(API_KEY, API_SECRET)
+auth.set_access_token(ACCESS_TOKEN, ACCESS_SECRET)
+api = tweepy.API(auth, wait_on_rate_limit=True)
+
+# Define the function to collect tweets
+def collect_tweets(user_ids, max_tweets=1000):
+    user_tweets = []
+    for user_id in user_ids:
+        try:
+            # Get the tweets for a user
+            tweets = tweepy.Cursor(api.user_timeline, id=user_id, tweet_mode="extended").items(max_tweets)
+            for tweet in tweets:
+                user_tweets.append({
+                    'user_id': user_id,
+                    'tweet_id': tweet.id,
+                    'tweet_text': tweet.full_text,
+                    'created_at': tweet.created_at
+                })
+        except tweepy.TweepError as e:
+            print(f"Error collecting tweets for user {user_id}: {e}")
+            continue
+    return user_tweets
+
+# Example function to collect tweets for users with mental health conditions
+def get_user_list_with_condition():
+    # Sample user IDs for demonstration purposes (replace with actual)
+    return ['user_id1', 'user_id2', 'user_id3']
+
+# Collect tweets for the specified users
+users_with_mental_health_condition = get_user_list_with_condition()
+tweets_data = collect_tweets(users_with_mental_health_condition)
+
+# Convert the collected data into a DataFrame
+df = pd.DataFrame(tweets_data)
+
+# Save to CSV
+df.to_csv("mental_health_tweets.csv", index=False)
+print("Tweets collected and saved successfully.")
